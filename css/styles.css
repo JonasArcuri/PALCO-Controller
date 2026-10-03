@@ -484,3 +484,18 @@ input[type="file"]::file-selector-button { border: 0; border-radius: 6px; paddin
 @media (prefers-reduced-motion: reduce) {
   button { transition: none; }
 }
+/* Pads compactos e controles de repetição */
+.pad { margin: 0 0 16px; min-height: 104px; }
+.pad-copy { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; min-width: 0; }
+.pad-copy small { font-size: 10px; letter-spacing: 1.3px; font-weight: 500; opacity: .8; }
+.repeat-controls { display: flex; gap: 5px; align-items: center; }
+.repeat-controls .mini { padding: 8px; min-width: 36px; }
+.repeat-controls [data-loop] { font-size: 16px; min-width: 64px; }
+.volume-bar { position: relative; height: 48px; border-radius: 9px; overflow: hidden; background: linear-gradient(to right,#455c2b var(--volume),#232b35 var(--volume)); border: 1px solid #53623f; margin: 18px 0; }
+.volume-bar span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 11px; letter-spacing: 1.5px; font-weight: 700; color: #f3f7ec; pointer-events: none; }
+.volume-bar input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; }
+.volume-bar:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
+.song { border: 1px solid #2e3642; background: #171c24; cursor: grab; }
+.song-grip { float: right; margin-left: 12px; color: #a6b58e; touch-action: none; font-size: 22px; }
+.song.dragging { opacity: .45; }
+.song.drop-target { outline: 2px solid var(--accent); outline-offset: 2px; }
