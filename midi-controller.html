@@ -11,8 +11,7 @@
 <body>
     <header>
         <div class="brand">PALCO<span> ●</span></div>
-        <div class="row"><span class="badge" id="cloudStatus">LOCAL · SEM CONTA</span><button id="account" disabled>Entrar / Criar conta</button><button id="export">Exportar backup</button><button
-                id="import">Importar</button></div>
+        <div class="row"><span class="badge" id="cloudStatus">LOCAL · SEM CONTA</span><button id="account" disabled>Entrar / Criar conta</button><details class="header-menu"><summary aria-label="Nuvem" title="Nuvem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18a4 4 0 0 1-1-8 7 7 0 0 1 13-1 4.5 4.5 0 0 1 0 9Z"/></svg></summary><div class="header-popover"><button id="cloudSave" disabled>Salvar na nuvem</button><button id="cloudLoad" disabled>Importar da nuvem</button><p id="cloudHint" class="hint">Supabase ainda não configurado.</p></div></details><details class="header-menu"><summary aria-label="Backups" title="Backups">⚙</summary><div class="header-popover"><button id="export">Exportar backup</button><button id="import">Importar backup</button></div></details></div>
     </header>
     <div class="layout">
         <aside>
@@ -20,7 +19,6 @@
                 <h2>Seu repertório</h2><span id="count" class="hint">0 músicas</span>
             </div><button class="primary" id="newSong">＋ Nova música</button><input id="search"
                 placeholder="Buscar música…" aria-label="Buscar música">
-            <div class="cloud-actions"><button id="cloudSave" disabled>Salvar na nuvem</button><button id="cloudLoad" disabled>Importar da nuvem</button><p id="cloudHint" class="hint">Supabase ainda não configurado.</p></div>
             <nav class="songs" id="songs"></nav>
             <p class="footnote">Seus arquivos ficam neste navegador e dispositivo. Exporte backups: apagar os dados do
                 site também apaga a biblioteca.</p>
@@ -56,6 +54,7 @@
             </div>
         </form>
     </dialog>
+    <dialog id="conflictDialog" aria-labelledby="conflictTitle"><form method="dialog"><h2 id="conflictTitle">Conflitos na importação</h2><p>Músicas com o mesmo nome serão reunidas. Marque os itens que deseja substituir. Samples desmarcados serão mantidos; itens novos serão adicionados.</p><div id="conflictList"></div><div class="row"><button type="button" id="replaceAll">Substituir todos</button><button value="cancel">Cancelar</button><button class="primary" value="apply">Aplicar seleção</button></div></form></dialog>
     <input id="backup" type="file" accept="application/json,.json" hidden>
     <div id="status" role="status" aria-live="polite"></div>
     <script defer src="js/config.js"></script>
@@ -63,6 +62,7 @@
     <script defer src="js/midi.js"></script>
     <script defer src="js/app.js"></script>
     <script defer src="js/backup.js"></script>
+    <script defer src="js/cloud-import.js"></script>
     <script defer src="js/cloud.js"></script>
 </body>
 

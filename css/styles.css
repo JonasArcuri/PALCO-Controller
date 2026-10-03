@@ -520,3 +520,16 @@ input[type="file"]::file-selector-button { border: 0; border-radius: 6px; paddin
 .pad-menu svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .playing .pad-settings summary { color: #142109; }
 .playing .pad-settings summary:hover, .playing .pad-settings[open] summary { color: #c4f46c; }
+.header-menu { position: relative; }
+.header-menu summary { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #363841; border-radius: 9px; cursor: pointer; list-style: none; font-size: 21px; }
+.header-menu summary::-webkit-details-marker { display: none; }
+.header-menu summary svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.header-menu summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.header-popover { position: absolute; right: 0; top: 52px; z-index: 10; display: grid; gap: 8px; width: 260px; max-width: calc(100vw - 36px); padding: 14px; background: #151a21; border: 1px solid #424d5d; border-radius: 12px; box-shadow: 0 10px 32px #0008; }
+header .header-popover button { width: 100%; text-align: left; }
+#conflictDialog { width: 650px; max-height: 85vh; }
+#conflictList { max-height: 45vh; overflow: auto; margin-bottom: 20px; }
+.conflict-item { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid #354151; border-radius: 9px; }
+.conflict-item input { width: 18px; min-height: 18px; margin: 2px 0; flex-shrink: 0; }
+.conflict-item span { overflow-wrap: anywhere; }
+.conflict-item small { display: block; margin-top: 6px; color: #aab6c7; }

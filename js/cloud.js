@@ -90,8 +90,7 @@
             files.push({ ...file, data: await base64(blob) });
         }
         // Reutiliza a validação e a transação de importação local, preservando a biblioteca existente.
-        const file = new Blob([JSON.stringify({ ...backup, files })], { type: 'application/json' });
-        await document.querySelector('#backup').onchange({ target: { files: [file], value: '' } });
+        await importCloudLibrary({ ...backup, files });
     });
     async function init() {
         const config = window.PALCO_CONFIG;

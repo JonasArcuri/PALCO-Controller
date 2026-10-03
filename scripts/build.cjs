@@ -19,7 +19,7 @@ fs.mkdirSync(path.join(output, 'css'), { recursive: true });
 // Lista explícita: .env, SQL e arquivos internos nunca são publicados.
 fs.copyFileSync(path.join(root, 'midi-controller.html'), path.join(output, 'midi-controller.html'));
 fs.copyFileSync(path.join(root, 'css/styles.css'), path.join(output, 'css/styles.css'));
-for (const name of ['app', 'backup', 'cloud', 'midi', 'storage']) {
+for (const name of ['app', 'backup', 'cloud', 'cloud-import', 'midi', 'storage']) {
   fs.copyFileSync(path.join(root, `js/${name}.js`), path.join(output, `js/${name}.js`));
 }
 fs.writeFileSync(path.join(output, 'js/config.js'), `// Gerado no build. Contém apenas configuração pública.\nwindow.PALCO_CONFIG = ${JSON.stringify({ supabaseUrl: url, supabaseKey: key }, null, 2)};\n`);
