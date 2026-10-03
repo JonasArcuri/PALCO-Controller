@@ -10,7 +10,7 @@ function planCloudImport(backup, localSongs, localSamples) {
         const matches = localSongs.filter(s => cloudName(s.name) === cloudName(song.name));
         if (matches.length > 1) throw Error('Há mais de uma música local chamada “'+song.name+'”. Renomeie antes de importar.');
         const old = matches[0], id = old?.id || uid(); songMap.set(song.id,id);
-        const item = { value: {...song,id,position:old?.position ?? song.position ?? Date.now(),updatedAt:Date.now()}, old };
+        const item = { value: {...song,id,position:song.position ?? old?.position ?? Date.now(),updatedAt:Date.now()}, old };
         incomingSongs.push(item);
         if (old) { item.conflict = conflicts.length; conflicts.push({name:song.name,kind:'Música',local:'Organização e dados da música',incoming:'Dados da música na nuvem'}); }
     }
@@ -28,7 +28,7 @@ function planCloudImport(backup, localSongs, localSamples) {
         const matches=localSamples.filter(s=>s.songId===songId && cloudName(s.name)===cloudName(sample.name));
         if(matches.length>1)throw Error('Há samples locais duplicados chamados “'+sample.name+'”. Renomeie antes de importar.');
         const old=matches[0],item={value:{...sample,id:old?.id||uid(),songId,fileId:fileMap.get(sample.fileId)},old}; incomingSamples.push(item);
-        if(old){item.conflict=conflicts.length;conflicts.push({name:sample.name,kind:'Sample · '+backup.songs.find(s=>songMap.get(s.id)===songId).name,local:old.fileName,incoming:sample.fileName})}
+        if(old){item.conflict=conflicts.length;conflicts.push({name:sample.name,kind:'Sample · '+backup.songs.find(s=>songMap.get(s.id)===songId).name,local:cloudSampleDescription(old),incoming:cloudSampleDescription(sample)})}
     }
     return {conflicts,incomingSongs,incomingSamples,incomingFiles};
 }
@@ -62,3 +62,5 @@ async function importCloudLibrary(backup) {
 }
 document.addEventListener('click',e=>{document.querySelectorAll('.header-menu[open]').forEach(menu=>{if(!menu.contains(e.target)||e.target.closest('button'))menu.open=false})});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.header-menu[open]').forEach(menu=>menu.open=false)});
+
+function cloudSampleDescription(s) { const count=Number.isInteger(s.repeatCount)&&s.repeatCount>0?'x'+s.repeatCount:'∞'; return s.fileName+' · Volume: '+Math.round(s.volume*100)+'% · Repetição: '+(s.loop?count:'desativada'); }

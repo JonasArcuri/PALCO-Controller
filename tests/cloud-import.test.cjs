@@ -5,3 +5,18 @@ const backup={version:1,songs:[{...song,id:'remote'}],samples:[{...sample,id:'re
 test('conflicts merge songs and allow keeping or replacing each sample and file',()=>{const c=setup();c.backup=backup;c.localSongs=[song];c.localSamples=[sample];vm.runInContext('plan=planCloudImport(backup,localSongs,localSamples)',c);assert.equal(vm.runInContext('plan.conflicts.length',c),2);assert.equal(vm.runInContext('cloudImportOperations(plan,new Set(),localSamples).length',c),0);const result=vm.runInContext('cloudImportOperations(plan,new Set([0,1]),localSamples)',c);assert.equal(result.filter(op=>op.store==='songs')[0].value.id,'song');assert.equal(result.find(op=>op.store==='samples').value.id,'sample');assert.equal(result.find(op=>op.type==='delete').id,'file');assert.equal(result.find(op=>op.store==='files'&&op.type==='put').value.name,'new.wav')});
 test('shared old files remain intact and duplicated remote names are rejected',()=>{const c=setup();c.backup=backup;c.localSongs=[song];c.localSamples=[sample,{...sample,id:'other',name:'Other',shortcut:'w'}];vm.runInContext('plan=planCloudImport(backup,localSongs,localSamples)',c);assert.equal(vm.runInContext('cloudImportOperations(plan,new Set([1]),localSamples).some(op=>op.type==="delete")',c),false);c.backup={...backup,songs:[...backup.songs,{id:'duplicate',name:' MUSICA '}]};assert.throws(()=>vm.runInContext('planCloudImport(backup,localSongs,localSamples)',c),/duplicadas/)});
 test('menus have unique required IDs and cloud handler uses conflict-aware import',()=>{const html=fs.readFileSync('midi-controller.html','utf8');for(const id of ['cloudSave','cloudLoad','cloudHint','import','export'])assert.equal(html.split(`id="${id}"`).length-1,1);assert.ok(fs.readFileSync('js/cloud.js','utf8').includes('await importCloudLibrary'))});
+test('cloud import restores sample volume, repeat count, loop and ordering on a new device or replacement',()=>{
+ for(const repeatCount of [2,5,null])for(const volume of [0,.37,1]) {
+  const c=setup();c.backup={...backup,songs:[{...backup.songs[0],position:8}],samples:[{...backup.samples[0],volume,repeatCount,loop:true,position:3}]};
+  for(const existing of [false,true]) { c.localSongs=existing?[song]:[];c.localSamples=existing?[sample]:[];
+   const ops=vm.runInContext('cloudImportOperations(planCloudImport(backup,localSongs,localSamples),new Set([0,1]),localSamples)',c);
+   const restored=ops.find(op=>op.store==='samples').value;
+   assert.equal(restored.volume,volume);assert.equal(restored.repeatCount,repeatCount);assert.equal(restored.loop,true);assert.equal(restored.position,3);assert.equal(ops.find(op=>op.store==='songs').value.position,8);
+  }
+ }
+});
+test('save snapshot flushes current sample settings before reading records for upload',async()=>{
+ const elements=new Map(),persisted={songs:[],samples:[{id:'a',volume:.8}],files:[]};let transaction;
+ const c=vm.createContext({samples:[{id:'a',volume:.23,repeatCount:4,loop:true,position:2}],document:{querySelector(s){if(!elements.has(s))elements.set(s,{});return elements.get(s)}},db:{transaction(stores,mode){assert.equal(mode,'readwrite');transaction={objectStore(store){return {put(value){persisted[store]=[value]},getAll(){const request={};queueMicrotask(()=>request.onsuccess());Object.defineProperty(request,'result',{get:()=>persisted[store]});return request}}}};setImmediate(()=>transaction.oncomplete());return transaction}}});
+ let code=fs.readFileSync('js/cloud.js','utf8').replace('    init();','    globalThis.snapshotForTest = snapshot;');vm.runInContext(code,c);const result=await c.snapshotForTest();assert.equal(result.samples[0].volume,.23);assert.equal(result.samples[0].repeatCount,4);assert.equal(result.samples[0].loop,true);assert.equal(result.samples[0].position,2);
+});

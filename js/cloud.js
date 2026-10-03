@@ -51,7 +51,9 @@
     };
     function snapshot() {
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['songs', 'samples', 'files']);
+            const transaction = db.transaction(['songs', 'samples', 'files'], 'readwrite');
+            // Captura também o volume mais recente da tela antes de ler o snapshot.
+            for (const sample of samples) transaction.objectStore('samples').put({ ...sample });
             const result = {};
             for (const name of ['songs', 'samples', 'files']) {
                 const request = transaction.objectStore(name).getAll();
@@ -75,7 +77,7 @@
             files.push({ id: file.id, name: file.name, mime: file.mime, size: file.size, path });
         }
         checked(await client.from('palco_libraries').upsert({ user_id: owner, data: { version: 1, songs: data.songs, samples: data.samples, files }, updated_at: new Date().toISOString() }));
-        notify('Biblioteca salva no Supabase.');
+        notify('Biblioteca salva na nuvem com volumes, repetições e ordem dos samples.');
     });
     load.onclick = () => run(async () => {
         const row = checked(await client.from('palco_libraries').select('data').eq('user_id', user.id).maybeSingle());
