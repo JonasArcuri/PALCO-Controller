@@ -17,3 +17,10 @@ test('audio pads share one context and play, pause, resume and stop independentl
  await vm.runInContext("toggle('a')",c);assert.equal(sources.length,3);vm.runInContext("stop('a')",c);assert.equal(vm.runInContext("players.has('b') && !players.has('a')",c),true);
  sources[1].onended();assert.equal(vm.runInContext("players.size",c),0);
 });
+test('sample reordering persists per-song order without interrupting players or altering other songs',async()=>{
+ const c=setup();vm.runInContext("samples=[{id:'a',songId:'s',position:0,name:'A'},{id:'b',songId:'s',position:1,name:'B'},{id:'c',songId:'s',position:2,name:'C'},{id:'other',songId:'t',position:10,name:'Other'}];players.set('a',{playing:true});render=()=>{};notify=()=>{};tx=async(stores,mode,fn)=>fn({objectStore:()=>({put(s){if(!s.name)throw Error('Metadata lost')}})})",c);
+ await vm.runInContext("reorderSamples('a','c')",c);
+ assert.equal(vm.runInContext("samples.filter(s=>s.songId==='s').sort((a,b)=>a.position-b.position).map(s=>s.id).join(',')",c),'b,c,a');
+ assert.equal(vm.runInContext("samples.find(s=>s.id==='other').position",c),10);assert.equal(vm.runInContext("players.get('a').playing",c),true);
+ await vm.runInContext("reorderSamples('a','other')",c);assert.equal(vm.runInContext("samples.find(s=>s.id==='a').position",c),2);
+});

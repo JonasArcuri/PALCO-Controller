@@ -533,3 +533,8 @@ header .header-popover button { width: 100%; text-align: left; }
 .conflict-item input { width: 18px; min-height: 18px; margin: 2px 0; flex-shrink: 0; }
 .conflict-item span { overflow-wrap: anywhere; }
 .conflict-item small { display: block; margin-top: 6px; color: #aab6c7; }
+.card { padding-top: 28px; }
+.sample-grip { position: absolute; top: 2px; right: 8px; width: 28px; height: 24px; min-height: 24px; padding: 0; border: 0; background: transparent; color: #a6b58e; cursor: grab; touch-action: none; user-select: none; font-size: 20px; line-height: 1; }
+.sample-grip:active { cursor: grabbing; }
+.card.sample-dragging { opacity: .5; }
+.card.sample-drop-target { outline: 2px solid var(--accent); outline-offset: 3px; }
