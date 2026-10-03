@@ -1,0 +1,3 @@
+function tx(stores, mode, fn) { return new Promise((resolve, reject) => { const t = db.transaction(stores, mode); let result; try { result = fn(t) } catch (e) { t.abort(); reject(e); return } t.oncomplete = () => resolve(result); t.onerror = () => reject(t.error); t.onabort = () => reject(t.error || Error('Operação cancelada')) }) }
+function all(store) { return new Promise((resolve, reject) => { const r = db.transaction(store).objectStore(store).getAll(); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error) }) }
+function getFile(id) { return new Promise((resolve, reject) => { const r = db.transaction('files').objectStore('files').get(id); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error) }) }

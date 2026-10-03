@@ -1,29 +1,55 @@
-# PALCO - Controller
+﻿# PALCO — Controladora de samples
 
-Abra `midi-controller.html` em um navegador moderno. A aplicação é independente, sem dependências externas e sem backend. Para manter uma origem estável de armazenamento, também pode ser servida por um servidor HTTP estático local. Use sempre o mesmo navegador, endereço e perfil para acessar sua biblioteca.
+Aplicação estática com biblioteca local em IndexedDB e salvamento opcional no Supabase. Requer Node.js 22 ou superior para gerar a configuração pública e servir o projeto.
 
-## Utilização
+## Estrutura
 
-1. Crie uma música no repertório.
-2. Adicione um sample, informe o nome e escolha um arquivo.
-3. Opcionalmente associe uma letra ou número como atalho.
-4. Use reprodução/pausa, parada, repetição e volume em cada cartão.
-5. Use Escape ou “Parar tudo” para interromper os samples. Trocar de música também interrompe a reprodução.
-6. Exporte backups regularmente. A importação adiciona cópias das músicas sem substituir a biblioteca existente.
+- `midi-controller.html`: interface e formulários.
+- `css/styles.css`: estilos.
+- `js/app.js`: interface, controles e reprodução.
+- `js/midi.js`: parser MIDI.
+- `js/storage.js`: operações IndexedDB.
+- `js/backup.js`: exportação e importação JSON.
+- `js/cloud.js`: contas e salvamento/importação pelo Supabase.
+- `.env`: configuração local, ignorada pelo Git.
+- `.env.example`: modelo de configuração sem credenciais.
+- `js/config.js`: configuração vazia para o modo local; o build gera a configuração em `dist/js/config.js`.
+- `scripts/`: build e servidor local que publica somente os arquivos da aplicação.
+- `supabase/schema.sql`: tabela, bucket privado e políticas RLS.
 
-## Armazenamento
+## Conectar ao Supabase
 
-IndexedDB guarda três coleções: músicas, samples e arquivos binários. Não há envio de arquivos a servidores. A capacidade depende da quota do navegador. Limpar os dados do site ou usar outro navegador/endereço não preserva o acesso à biblioteca. Backups JSON incluem os arquivos em base64, ficando maiores que os originais e exigindo memória proporcional ao tamanho da biblioteca.
+1. Crie um projeto Supabase e execute `supabase/schema.sql` no SQL Editor.
+2. Em Authentication, habilite o provedor Email. Configure a Site URL com o endereço publicado e os endereços locais utilizados. Configure SMTP para envio de confirmações em produção.
+3. Copie `.env.example` para `.env` se o arquivo ainda não existir. Preencha `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` com a URL e a **publishable key** (ou chave legada **anon**). O build rejeita chaves secretas e `service_role`.
+4. Execute `npm start` e abra `http://localhost:3000`. Reinicie após alterar `.env`. Para produção, execute `npm run build` e publique somente `dist/`.
+5. Clique em **Entrar / Criar conta**, informe e-mail e senha de pelo menos oito caracteres e escolha **Criar conta**. Se a confirmação estiver habilitada, confirme o e-mail e depois entre.
+6. Use **Salvar na nuvem** para enviar a biblioteca. Em outro dispositivo, entre na mesma conta e use **Importar da nuvem**.
 
-## Reprodução
+Sem configuração, o aplicativo continua funcionando localmente. O SDK Supabase é carregado de esm.sh apenas quando a configuração está preenchida. A nuvem depende de internet.
 
-Áudio usa o decodificador do navegador; nem todo formato ou codec é compatível. MIDI aceita Standard MIDI Files formato 0/1 com resolução PPQ, múltiplas trilhas e mudanças de tempo. A reprodução usa osciladores básicos Web Audio, sem banco de instrumentos General MIDI. Program changes, sustain, pitch bend e demais controladores não são interpretados nesta versão. Não há comunicação com hardware MIDI. A reprodução simultânea é independente, sem sincronização musical entre samples.
+Na Vercel, cadastre `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` nas variáveis de ambiente do projeto e faça um novo deploy. O `vercel.json` já configura o build e a publicação de `dist/`. Variáveis do ambiente de build têm prioridade sobre `.env`.
 
-## Organização
+O `.env` não é versionado nem copiado para `dist/`. A URL e a chave pública são incluídas no JavaScript gerado e continuam visíveis no navegador, como exige o SDK. Isso não substitui as políticas RLS: elas protegem o acesso aos dados. Nunca coloque segredos de backend nessas variáveis. O servidor local expõe apenas uma lista de arquivos públicos; não sirva a raiz do repositório.
 
-A primeira versão está concentrada em um HTML independente: estilos, interface, persistência, reprodução, parser MIDI e backup. Essa escolha permite abrir a aplicação sem instalar ferramentas. Uma migração posterior pode separar esses módulos em React/TypeScript conforme o planejamento inicial.
+## Salvamento
 
-## Validação pendente
+As edições são salvas automaticamente **neste navegador**. O envio ao Supabase é **manual**, pelo botão Salvar na nuvem, e substitui o último salvamento da conta após confirmação. Alterações feitas durante o envio precisam de outro salvamento. Não há sincronização automática nem mesclagem entre dispositivos: o último envio concluído prevalece.
 
-O terminal do ambiente de construção não iniciou (código Windows -1073741502). Não foi possível executar testes automatizados ou validar a reprodução no navegador neste ambiente. Antes de uso ao vivo, verificar: criação/edição/exclusão; recarga preservando arquivos; dois áudios simultâneos; MIDI com mudanças de tempo; pausa/retomada/repetição; Escape e troca de música; exportação/importação; arquivo incompatível e armazenamento sem espaço.
+Músicas, configurações dos samples e referências de arquivos ficam como JSONB em `palco_libraries`. Os binários ficam no bucket privado `palco-files`. Políticas RLS restringem o acesso ao proprietário autenticado.
 
+Cada envio usa caminhos novos. A referência no banco só é atualizada após todos os uploads, preservando o salvamento anterior se um upload falhar. Arquivos de revisões antigas e uploads interrompidos permanecem no Storage; a limpeza deve ser feita pelo administrador sem remover caminhos referenciados pela biblioteca atual. Observe os limites de tamanho e quota do projeto.
+
+**Importar da nuvem** adiciona cópias após confirmação, sem apagar a biblioteca local. Importações repetidas geram duplicatas. Entrar ou sair não apaga nem troca os dados locais: confira a biblioteca antes de enviá-la para outra conta em um navegador compartilhado.
+
+## Uso e backups
+
+Crie músicas e adicione arquivos de áudio ou MIDI. Letras ou números podem ser atalhos. Escape e troca de música interrompem a reprodução. Cada sample tem pausa, parada, repetição e volume.
+
+Exportar backup gera JSON com arquivos em base64. Importar adiciona cópias. Preserve backups: limpar dados do site apaga a biblioteca local. MIDI usa sintetizador Web Audio básico, sem banco General MIDI nem comunicação com hardware; aceita formatos 0/1 PPQ. A compatibilidade de áudio depende do navegador.
+
+## Verificação
+
+Após conectar, verifique cadastro, confirmação por e-mail, login, envio e importação em outro navegador. Teste outra conta para verificar isolamento RLS. A validação remota ponta a ponta depende de um projeto configurado.
+
+Referências: [autenticação](https://supabase.com/docs/guides/auth/passwords), [segurança de Storage](https://supabase.com/docs/guides/storage/security/access-control).

@@ -1,0 +1,9 @@
+{
+  "name": "palco-controller",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "start": "npm run build && node scripts/serve.cjs"
+  },
+  "engines": { "node": ">=22" }
+}
